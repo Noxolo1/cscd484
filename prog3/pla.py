@@ -35,7 +35,55 @@ class PLA:
 
             
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        #raise NotImplementedError()
+            
+        n,d = X.shape
+        X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
+        self.w = np.zeros(d+1)
+        
+        if not pocket:
+
+            update = True
+            
+            while update:
+
+                update = False
+
+                for i in range(n):
+                    if np.sign(X[i,:] @ self.w) != y[i]:
+
+                        # update might be wrong here
+                        self.w += y[i] * X[i,:] 
+                        update = True
+        else:
+
+            update = True
+            best_w = self.w
+
+            while update and epochs > 0:
+        
+                epochs -= 1
+                update = False
+
+                for i in range(n):
+                    if np.sign(X[i,:] @ self.w) != y[i]:
+
+                        self.w = self.w + y[i] * X[i,:] 
+                        update = True
+                        
+                        y_hat = np.sign(X @ self.w).reshape((y.shape[0], 1))
+
+                        # calculate misclassified counts
+                        error_count = np.sum(y_hat != y)
+
+                        y_hat_best_w = np.sign(X @ best_w).reshape((y.shape[0], 1))
+
+                        # update best_w if the current w is better
+                        if error_count < np.sum(y_hat_best_w != y):
+                            best_w = self.w
+
+            self.w = best_w
+
         ### END YOUR SOLUTION
             
                           
@@ -53,7 +101,13 @@ class PLA:
 
     
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        #raise NotImplementedError()
+            
+        # matrix multiplication Xw, then take sign of result to produce 
+        # y prediction
+        X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
+
+        return np.sign(X @ self.w)
         ### END YOUR SOLUTION
 
         
@@ -70,7 +124,17 @@ class PLA:
             X = MyUtils.z_transform(X, degree = self.degree)
 
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        #raise NotImplementedError()
+            
+        X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
+                
+        y_hat = np.sign(X @ self.w).reshape((y.shape[0], 1))
+
+            # calculate misclassified counts
+        error_count = np.sum(y_hat != y)
+
+        return error_count
+
         ### END YOUR SOLUTION
             
 
