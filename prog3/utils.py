@@ -76,7 +76,42 @@ class MyUtils:
             return X
 
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        #raise NotImplementedError()
+        n, d = X.shape
+
+
+        # dont want to use zero element
+        B = np.zeros(degree + 1)
+        
+        # dont want to use zero element
+        for i in range(1, degree + 1):
+            B[i] = np.math.factorial(i + d - 1)/(np.math.factorial(d - 1)*np.math.factorial((i)))
+        
+        d_prime = np.sum(B[1: degree + 2])
+
+        Z = np.copy(X)
+
+        #
+        l = np.arange(d_prime, dtype=int)
+
+        # create B_2 ... B_degree and append them onto Z
+
+        q  = 0  # total size of all buckets before the prev bucket
+        p = d  # total size of all previous buckets
+        g = d  # index of the new column in Z that is being computed
+
+        for i in range(2, int(degree + 1)):
+            for j in range (int(q), int(p)):
+                for k in range(int(l[j]), int(d)):
+                    temp = Z[:,j] * X[:,k] 
+                    Z = np.append(Z, temp.reshape(-1,1), 1)
+                    l[g] = k
+                    g += 1
+
+            q = p
+            p += B[i]
+        
+        return Z
         ### END YOUR SOLUTION
         
         
