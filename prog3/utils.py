@@ -84,7 +84,7 @@ class MyUtils:
         
         # dont want to use zero element
         for i in range(1, degree + 1):
-            B[i] = np.math.factorial(i + d - 1)/(np.math.factorial(d - 1)*np.math.factorial((i)))
+            B[i] = math.comb((i + d - 1), (d - 1))
         
         d_prime = np.sum(B[1: degree + 2])
 
