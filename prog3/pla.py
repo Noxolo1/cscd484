@@ -52,7 +52,6 @@ class PLA:
                 for i in range(n):
                     if np.sign(X[i,:] @ self.w) != y[i]:
 
-                        # update might be wrong here
                         self.w += y[i] * X[i,:] 
                         update = True
         else:
@@ -103,8 +102,7 @@ class PLA:
         ### BEGIN YOUR SOLUTION
         #raise NotImplementedError()
             
-        # matrix multiplication Xw, then take sign of result to produce 
-        # y prediction
+        # matrix multiplication Xw, then take sign of result to produce y prediction
         X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
 
         return np.sign(X @ self.w)
@@ -130,7 +128,7 @@ class PLA:
                 
         y_hat = np.sign(X @ self.w).reshape((y.shape[0], 1))
 
-            # calculate misclassified counts
+        # calculate misclassified counts
         error_count = np.sum(y_hat != y)
 
         return error_count

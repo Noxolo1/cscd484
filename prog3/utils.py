@@ -79,7 +79,6 @@ class MyUtils:
         #raise NotImplementedError()
         n, d = X.shape
 
-
         # dont want to use zero element
         B = np.zeros(degree + 1)
         
@@ -93,8 +92,6 @@ class MyUtils:
 
         #
         l = np.arange(d_prime, dtype=int)
-
-        # create B_2 ... B_degree and append them onto Z
 
         q  = 0  # total size of all buckets before the prev bucket
         p = d  # total size of all previous buckets
