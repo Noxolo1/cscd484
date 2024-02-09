@@ -54,11 +54,14 @@ class LinearRegression:
         ## Delete the `pass` statement below.
         ## Enter your code here that implements the closed-form method for
         ## linear regression 
-        pass
-                
 
-
-    
+        n,d = X.shape
+        X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
+        self.w = np.zeros(d+1).reshape((d+1,1))
+        
+        self.w = np.linalg.pinv(X.T @ X) @ X.T @ y
+        
+        return self.w
     
     def _fit_gd(self, X, y, lam = 0, eta = 0.01, epochs = 1000):
         ''' Compute the weight vector using the gradient desecent based method.
@@ -72,11 +75,18 @@ class LinearRegression:
         
         ## Enter your code here that implements the gradient descent based method
         ## for linear regression 
+        n,d = X.shape
+        X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
+        self.w = np.zeros(d+1).reshape((d+1,1))
+        
+        p1 = np.identity(d+1) - (((2 * eta) / n) * X.T @ X)
+        p2 = ((2 * eta)/n) * X.T @ y
+        
+        for i in range(epochs):
+            self.w = p1 @ self.w + p2
+            
 
-        pass
-
-  
-
+        return self.w
     
     def predict(self, X):
         ''' parameter:
@@ -92,11 +102,13 @@ class LinearRegression:
         ## space where you trained your model. Make sure X has been normalized via the same
         ## normalization used by the training process. 
 
-        pass
-        
+        n,d = X.shape
+        X = MyUtils.z_transform(X, degree = self.degree)
+        X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
 
-    
-    
+        # may be wrong computation of predict here
+        return X @ self.w
+        
     def error(self, X, y):
         ''' parameters:
                 X: n x d matrix of future samples
@@ -112,6 +124,16 @@ class LinearRegression:
         ## Make sure your predication is calculated at the same Z space where you trained your model. 
         ## Make sure X has been normalized via the same normalization used by the training process. 
 
-        pass
+        n,d = X.shape
+        X = MyUtils.z_transform(X, degree = self.degree)
+        X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
 
+        b = X @ self.w
+        c = b - y
+        d = np.linalg.norm(X @ self.w - y)
+
+        mse = (1/n) * (np.linalg.norm(X @ self.w - y))**2
+        
+        return mse
+ 
 
