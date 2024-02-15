@@ -59,7 +59,7 @@ class LinearRegression:
         X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
         self.w = np.zeros(d+1).reshape((d+1,1))
         
-        self.w = np.linalg.pinv(X.T @ X) @ X.T @ y
+        self.w = np.linalg.pinv(X.T @ X + lam*np.identity(d+1)) @ X.T @ y
         
         return self.w
     
@@ -79,7 +79,7 @@ class LinearRegression:
         X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
         self.w = np.zeros(d+1).reshape((d+1,1))
         
-        p1 = np.identity(d+1) - (((2 * eta) / n) * X.T @ X)
+        p1 = np.identity(d+1) - (((2 * eta) / n) * (X.T @ X + (lam * np.identity(d+1))))
         p2 = ((2 * eta)/n) * X.T @ y
         
         for i in range(epochs):
@@ -106,7 +106,6 @@ class LinearRegression:
         X = MyUtils.z_transform(X, degree = self.degree)
         X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
 
-        # may be wrong computation of predict here
         return X @ self.w
         
     def error(self, X, y):
