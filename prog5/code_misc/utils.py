@@ -1,4 +1,4 @@
-##### >>>>>> Please put your name and 6-digit EWUID here
+##### >>>>>> Nate Wilson - 00958137
 
 
 # Various tools for data manipulation. 

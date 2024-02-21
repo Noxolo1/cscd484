@@ -13,7 +13,6 @@ sys.path.append("..")
 from code_misc.utils import MyUtils
 
 
-
 class LogisticRegression:
     def __init__(self):
         self.w = None
@@ -41,24 +40,28 @@ class LogisticRegression:
         #pass
         self.degree = degree
         
-        X --> Z(X) --> add bias column --> X
-        
+        # X --> Z(X) --> add bias column --> X
+        X = MyUtils.z_transform(X, degree = self.degree)
         n,d = X.shape
+        X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
+        self.w = np.zeros(d+1).reshape((d+1,1))
         
-        init self.w same as you did for linear regression. The self.w size is d x 1
+        #init self.w same as you did for linear regression. The self.w size is d x 1
         
         if SGD is False: 
             for i in range(iterations): 
                 s = y * (X @ self.w)
-                self.w = (1.0 - 2.0*lam*eta/n) * self.w + eta/n * (X.T @ (y * LogisticRegression_v_sigmoid(s * (-1.0)) ))
+                self.w = (1.0 - 2.0*lam*eta/n) * self.w + eta/n * (X.T @ (y * LogisticRegression._v_sigmoid(s * (-1.0)) ))
         
-     
         else: # SGD is True
             
+            '''
+            for i in range(iterations): 
+                s = y * (X @ self.w)
+                self.w = (1.0 - 2.0*lam*eta/n) * self.w + eta/n * (X.T @ (y * LogisticRegression._v_sigmoid(s * (-1.0)) ))
+            '''
             
-            
-            
-            pass # next week's life
+            pass
         
         
 
@@ -72,15 +75,12 @@ class LogisticRegression:
     
         # remove the pass statement and fill in the code. 
         #pass
-        X -> Z(X) -> add bias column --> X
+        # X -> Z(X) -> add bias column --> X
+        X = MyUtils.z_transform(X, degree = self.degree)
+        X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
         
         return LogisticRegression._v_sigmoid(X @ self.w)
-        
-        
-        
-        
-        
-    
+       
     def error(self, X, y):
         ''' parameters:
                 X: n x d matrix; n samples; each has d features, excluding the bias feature. 
@@ -92,13 +92,12 @@ class LogisticRegression:
 
         # remove the pass statement and fill in the code.         
         #pass
-        X -> Z(X) -> add bias column --> X
+        # X -> Z(X) -> add bias column --> X
+        X = MyUtils.z_transform(X, degree = self.degree)
+        X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
 
         return np.sum(np.sign((np.sign(X @ self.w) - 0.1)) != y)
-        
-    
-    
-
+      
     def _v_sigmoid(s):
         '''
             vectorized sigmoid function
@@ -110,7 +109,6 @@ class LogisticRegression:
         # Hint: use the np.vectorize API
 
         # remove the pass statement and fill in the code.         
-        
 
         vs = np.vectorize(LogisticRegression._sigmoid)
         return vs(s)
@@ -129,7 +127,6 @@ class LogisticRegression:
         # remove the pass statement and fill in the code.         
         
         return 1.0 / (1.0 + math.exp(-s))
-    
     
         #pass
     
