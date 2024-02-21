@@ -1,4 +1,4 @@
-########## >>>>>> Put your full name and 6-digit EWU ID here. 
+########## >>>>>> Nate Wilson - 00958137. 
 
 # Implementation of the logistic regression with L2 regularization and supports stachastic gradient descent
 
