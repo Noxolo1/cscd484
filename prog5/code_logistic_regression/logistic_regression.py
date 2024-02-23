@@ -57,19 +57,13 @@ class LogisticRegression:
                 self.w = (1.0 - 2.0*lam*eta/n) * self.w + eta/n * (X.T @ (y * LogisticRegression._v_sigmoid(s * (-1.0)) ))
         
         else: # SGD is True
-            
 
-            
+            for i in range(0, iterations, mini_batch_size): 
 
-            '''
-            for i in range(iterations): 
-                s = y * (X @ self.w)
-                self.w = (1.0 - 2.0*lam*eta/n) * self.w + eta/n * (X.T @ (y * LogisticRegression._v_sigmoid(s * (-1.0)) ))
-            '''
-            
-            pass
-        
-        
+                X_prime, y_prime = X[i: (i + mini_batch_size), 0: d], y[i: i + mini_batch_size]
+
+                s = y_prime * (X_prime @ self.w)
+                self.w = (1.0 - 2.0*lam*eta/mini_batch_size) * self.w + eta/mini_batch_size * (X_prime.T @ (y_prime * LogisticRegression._v_sigmoid(s * (-1.0))))    
 
     
     def predict(self, X):
@@ -116,8 +110,9 @@ class LogisticRegression:
 
         # remove the pass statement and fill in the code.         
 
-        vs = np.vectorize(LogisticRegression._sigmoid)
-        return vs(s)
+        vs = np.vectorize(LogisticRegression._sigmoid, otypes=[float])
+        b = vs(s)
+        return b
     
         #return np.vectorize(LogisticRegression._sigmoid)(s)
     
