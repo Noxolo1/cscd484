@@ -42,9 +42,12 @@ class LogisticRegression:
         
         # X --> Z(X) --> add bias column --> X
         X = MyUtils.z_transform(X, degree = self.degree)
-        n,d = X.shape
         X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
-        self.w = np.zeros(d+1).reshape((d+1,1))
+        n,d = X.shape
+        self.w = np.zeros(d).reshape((d,1))
+
+        # permute X and y in unison
+        X, y = LogisticRegression._unison_shuffle(X, y)
         
         #init self.w same as you did for linear regression. The self.w size is d x 1
         
@@ -55,6 +58,9 @@ class LogisticRegression:
         
         else: # SGD is True
             
+
+            
+
             '''
             for i in range(iterations): 
                 s = y * (X @ self.w)
@@ -130,3 +136,7 @@ class LogisticRegression:
     
         #pass
     
+    def _unison_shuffle(a, b):
+        assert len(a) == len(b)
+        p = np.random.permutation(len(a))
+        return a[p], b[p]
