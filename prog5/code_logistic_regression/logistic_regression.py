@@ -34,10 +34,6 @@ class LogisticRegression:
                 mini_batch_size: the size of each mini batch size, if SGD is True.  
                 degree: the degree of the Z space
         '''
-
-        # remove the pass statement and fill in the code. 
-
-        #pass
         self.degree = degree
         
         # X --> Z(X) --> add bias column --> X
@@ -58,12 +54,23 @@ class LogisticRegression:
         
         else: # SGD is True
 
-            for i in range(0, iterations, mini_batch_size): 
+            import itertools
 
-                X_prime, y_prime = X[i: (i + mini_batch_size), 0: d], y[i: i + mini_batch_size]
+            # get indices of the mini batches 
+            # has form mini_batch_indices[i] = [starting index, ending index]
+            mini_batch_indices = LogisticRegression._mini_batch_indices(n, mini_batch_size)
 
-                s = y_prime * (X_prime @ self.w)
-                self.w = (1.0 - 2.0*lam*eta/mini_batch_size) * self.w + eta/mini_batch_size * (X_prime.T @ (y_prime * LogisticRegression._v_sigmoid(s * (-1.0))))    
+            # create iterator for cycling through mini_batch_indices array
+            cycle = itertools.cycle(mini_batch_indices)
+
+            for i in range(iterations): 
+
+                # each iteration of for loop needs to calculate new indices for X' and y'
+                # w/out creating copies of X, y 
+                # need to continually cycle through mini_batch_indices array to get desired indices for current self.w update
+                repeat_indices = next(cycle)
+                s = y[repeat_indices[0]: repeat_indices[1]] * (X[repeat_indices[0]: repeat_indices[1], 0: d] @ self.w)
+                self.w = (1.0 - 2.0*lam*eta/mini_batch_size) * self.w + eta/mini_batch_size * (X[repeat_indices[0]: repeat_indices[1], 0: d].T @ (y[repeat_indices[0]: repeat_indices[1]] * LogisticRegression._v_sigmoid(s * (-1.0))))    
 
     
     def predict(self, X):
@@ -73,8 +80,6 @@ class LogisticRegression:
                 n x 1 matrix: each row is the probability of each sample being positive. 
         '''
     
-        # remove the pass statement and fill in the code. 
-        #pass
         # X -> Z(X) -> add bias column --> X
         X = MyUtils.z_transform(X, degree = self.degree)
         X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
@@ -90,8 +95,6 @@ class LogisticRegression:
                 Every sample whose sigmoid value > 0.5 is given a +1 label; otherwise, a -1 label.
         '''
 
-        # remove the pass statement and fill in the code.         
-        #pass
         # X -> Z(X) -> add bias column --> X
         X = MyUtils.z_transform(X, degree = self.degree)
         X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
@@ -107,31 +110,44 @@ class LogisticRegression:
         '''
             
         # Hint: use the np.vectorize API
-
-        # remove the pass statement and fill in the code.         
-
         vs = np.vectorize(LogisticRegression._sigmoid, otypes=[float])
-        b = vs(s)
-        return b
-    
-        #return np.vectorize(LogisticRegression._sigmoid)(s)
-    
-        #pass
-    
+        return vs(s)
     
         
     def _sigmoid(s):
         ''' s: a real number
             return: the sigmoid function value of the input signal s
         '''
-
-        # remove the pass statement and fill in the code.         
-        
+    
         return 1.0 / (1.0 + math.exp(-s))
     
-        #pass
-    
     def _unison_shuffle(a, b):
-        assert len(a) == len(b)
-        p = np.random.permutation(len(a))
-        return a[p], b[p]
+        # function to perform unison shuffling using random permutation
+        if(len(a) == len(b)):
+            p = np.random.permutation(len(a))
+            return a[p], b[p]
+        else: 
+            raise Exception("Array lengths must match to perform unison shuffle.")
+        
+    
+    def _mini_batch_indices(n, mini_batch_size):
+
+        # function to compute mini batch indices
+        # returns array of mini batch indices in the form
+        # index_arr[i] = [starting index, ending index]
+        remainder_minibatch_length = n % mini_batch_size 
+        index_arr = []
+
+        for i in range(0, n - remainder_minibatch_length, mini_batch_size):
+            temp = np.arange(2)
+            temp[0], temp[1] = i, ((i + mini_batch_size) - 1)
+            index_arr.append(temp)
+            
+        if(remainder_minibatch_length != 0):    
+            temp_remainder = np.arange(2)
+            temp_remainder[0], temp_remainder[1] = (n - remainder_minibatch_length), (n - 1)
+            index_arr.append(temp_remainder)
+
+        return index_arr
+        
+        
