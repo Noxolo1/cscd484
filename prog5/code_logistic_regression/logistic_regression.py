@@ -40,12 +40,12 @@ class LogisticRegression:
         X = MyUtils.z_transform(X, degree = self.degree)
         X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
         n,d = X.shape
+
+        #init self.w same as you did for linear regression. The self.w size is d x 1
         self.w = np.zeros(d).reshape((d,1))
 
         # permute X and y in unison
         X, y = LogisticRegression._unison_shuffle(X, y)
-        
-        #init self.w same as you did for linear regression. The self.w size is d x 1
         
         if SGD is False: 
             for i in range(iterations): 
@@ -56,7 +56,7 @@ class LogisticRegression:
 
             import itertools
 
-            # get indices of the mini batches 
+            # get indices of the mini batches, 
             # has form mini_batch_indices[i] = [starting index, ending index]
             mini_batch_indices = LogisticRegression._mini_batch_indices(n, mini_batch_size)
 
@@ -122,10 +122,11 @@ class LogisticRegression:
         return 1.0 / (1.0 + math.exp(-s))
     
     def _unison_shuffle(a, b):
+        
         # function to perform unison shuffling using random permutation
         if(len(a) == len(b)):
-            p = np.random.permutation(len(a))
-            return a[p], b[p]
+            perm = np.random.permutation(len(a))
+            return a[perm], b[perm]
         else: 
             raise Exception("Array lengths must match to perform unison shuffle.")
         
