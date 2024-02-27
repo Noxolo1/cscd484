@@ -69,8 +69,9 @@ class LogisticRegression:
                 # w/out creating copies of X, y 
                 # need to continually cycle through mini_batch_indices array to get desired indices for current self.w update
                 repeat_indices = next(cycle)
-                s = y[repeat_indices[0]: repeat_indices[1]] * (X[repeat_indices[0]: repeat_indices[1], 0: d] @ self.w)
-                self.w = (1.0 - 2.0*lam*eta/mini_batch_size) * self.w + eta/mini_batch_size * (X[repeat_indices[0]: repeat_indices[1], 0: d].T @ (y[repeat_indices[0]: repeat_indices[1]] * LogisticRegression._v_sigmoid(s * (-1.0))))    
+                n_prime = repeat_indices[1] - repeat_indices[0] + 1
+                s = y[repeat_indices[0]: (repeat_indices[1] + 1)] * (X[repeat_indices[0]: repeat_indices[1], :] @ self.w)
+                self.w = (1.0 - 2.0*lam*eta/n_prime) * self.w + eta/n_prime * (X[repeat_indices[0]:  (repeat_indices[1] + 1), :].T @ (y[repeat_indices[0]: repeat_indices[1]] * LogisticRegression._v_sigmoid(s * (-1.0))))    
 
     
     def predict(self, X):
