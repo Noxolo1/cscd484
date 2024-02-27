@@ -43,9 +43,6 @@ class LogisticRegression:
 
         #init self.w same as you did for linear regression. The self.w size is d x 1
         self.w = np.zeros(d).reshape((d,1))
-
-        # permute X and y in unison
-        X, y = LogisticRegression._unison_shuffle(X, y)
         
         if SGD is False: 
             for i in range(iterations): 
@@ -56,6 +53,9 @@ class LogisticRegression:
 
             import itertools
 
+            # permute X and y in unison
+            #X, y = LogisticRegression._unison_shuffle(X, y)
+            
             # get indices of the mini batches, 
             # has form mini_batch_indices[i] = [starting index, ending index]
             mini_batch_indices = LogisticRegression._mini_batch_indices(n, mini_batch_size)
@@ -69,10 +69,11 @@ class LogisticRegression:
                 # w/out creating copies of X, y 
                 # need to continually cycle through mini_batch_indices array to get desired indices for current self.w update
                 repeat_indices = next(cycle)
-                n_prime = repeat_indices[1] - repeat_indices[0] + 1
-                s = y[repeat_indices[0]: (repeat_indices[1] + 1)] * (X[repeat_indices[0]: repeat_indices[1], :] @ self.w)
-                self.w = (1.0 - 2.0*lam*eta/n_prime) * self.w + eta/n_prime * (X[repeat_indices[0]:  (repeat_indices[1] + 1), :].T @ (y[repeat_indices[0]: repeat_indices[1]] * LogisticRegression._v_sigmoid(s * (-1.0))))    
+                n_prime = (repeat_indices[1] - repeat_indices[0]) + 1
 
+                s = y[repeat_indices[0]: (repeat_indices[1] + 1)] * (X[repeat_indices[0]: (repeat_indices[1] + 1), :] @ self.w)
+                self.w = (1.0 - 2.0*lam*eta/n_prime) * self.w + (eta/n_prime * (X[repeat_indices[0]: (repeat_indices[1] + 1), :].T @ (y[repeat_indices[0]: (repeat_indices[1] + 1)] * LogisticRegression._v_sigmoid(s * (-1.0)))))    
+ 
     
     def predict(self, X):
         ''' parameters:
@@ -122,14 +123,14 @@ class LogisticRegression:
     
         return 1.0 / (1.0 + math.exp(-s))
     
+
     def _unison_shuffle(a, b):
         
         # function to perform unison shuffling using random permutation
         if(len(a) == len(b)):
-            perm = np.random.permutation(len(a))
-            return a[perm], b[perm]
-        else: 
-            raise Exception("Array lengths must match to perform unison shuffle.")
+            permutation = np.random.permutation(len(a))
+            return a[permutation], b[permutation]
+        
         
     
     def _mini_batch_indices(n, mini_batch_size):
@@ -141,15 +142,13 @@ class LogisticRegression:
         index_arr = []
 
         for i in range(0, n - remainder_minibatch_length, mini_batch_size):
-            temp = np.arange(2)
-            temp[0], temp[1] = i, ((i + mini_batch_size) - 1)
+            temp = [i, ((i + mini_batch_size) - 1)]
             index_arr.append(temp)
             
         if(remainder_minibatch_length != 0):    
-            temp_remainder = np.arange(2)
-            temp_remainder[0], temp_remainder[1] = (n - remainder_minibatch_length), (n - 1)
+            temp_remainder = [(n - remainder_minibatch_length), (n - 1)]
             index_arr.append(temp_remainder)
 
-        return index_arr
+        return np.asarray(index_arr)
         
         
