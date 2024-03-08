@@ -11,8 +11,8 @@
 
 import numpy as np
 import math
-from . import math_util as mu
-from . import nn_layer
+import math_util as mu
+import nn_layer
 
 
 class NeuralNetwork:
@@ -51,20 +51,20 @@ class NeuralNetwork:
         # and initialize self.w (the weights) of the given layer using 
         # range above 
         # start range at 1 so we can get d value for l - 1 layer
-        for i in range(1, len(self.layers)):
+        for i in range(1, self.L + 1):
             
             d_cur = self.layers[i].d
             sqrt_d_cur = np.sqrt(d_cur)
-            d_prev = self.layer[i - 1].d
+            d_prev = self.layers[i - 1].d
 
             # might need to change this, currently excludes high
-            vec = np.random.Generator.uniform(-1.0/sqrt_d_cur, 1.0/sqrt_d_cur)
+            vec = np.random.uniform(-1.0/sqrt_d_cur, 1.0/sqrt_d_cur, (d_prev + 1, d_cur))
 
             # (d^{(\ell-1)}+1 ) x d^{(\ell)} matrix. The weights of the edges coming into layer \ell.
             # repeatedly insert vec as a column into self.w to create (might need to insert as rows
             # but shouldn't matter here)
             # (d^{(\ell-1)}+1 ) x d^{(\ell)} matrix
-            self.layers[i].W = np.tile(vec.T, ((d_prev + 1), d_cur))
+            self.layers[i].W = vec
         
     def fit(self, X, Y, eta = 0.01, iterations = 1000, SGD = True, mini_batch_size = 1):
         ''' Find the fitting weight matrices for every hidden layer and the output layer. Save them in the layers.
@@ -110,39 +110,75 @@ class NeuralNetwork:
             start = repeat_indices[0]
             end = repeat_indices[1]
 
-            X_prime = X[start, end + 1]
-            Y_prime = Y[start, end + 1]
+            X_prime = X[start: end + 1, :]
+            Y_prime = Y[start: end + 1, :]
             n_prime, d_prime = X_prime.shape
 
+            # assign X in input layer
+            self.layers[0].X = X_prime
+
             # forward feed with minibatch
-            self._forward_feed(X_prime)
+            self._forward_feed()
 
-            E = np.sum((self.layers[i].X_prime[:][1: d_prime + 1] - Y_prime) * (self.layers[i].X_prime[:][1: d_prime + 1] - Y_prime)) * 1/len(n_prime)
+            # calculate error
+            E = np.sum((self.layers[self.L].X[:,1:] - Y_prime) * (self.layers[self.L].X[:,1:] - Y_prime)) * (1/n_prime)
 
+            # calculate delta 
+            self.layers[self.L].Delta = 2 * (self.layers[self.L].X[:,1:] - Y_prime) * self.layers[self.L].act_de(self.layers[self.L].S)
+            
+            # calculate gradient
+            self.layers[self.L].G = np.einsum('ij, ik -> jk', self.layers[self.L - 1].X, self.layers[self.L].Delta)* (1/n_prime)
 
-    def _forward_feed(self, X_prime):
+            ### back propagrate
+            self._back_propagation(n_prime)
+
+            # update weights 
+            self._update_weights(eta)
+
+    def _forward_feed(self):
         
-        for i in range(1, len(self.layers) + 1):
+        # function to forward feed 
+        for i in range(1, self.L + 1):
 
-            # think this is done 
-            self.layers[i].S = self.layers[i-1].X_prime @ self.layers[i].W
+            self.layers[i].S = self.layers[i-1].X @ self.layers[i].W
             theta_S_l = self.layers[i].act(self.layers[i].S)
-            self.layers[i].X_prime = np.insert(theta_S_l, 0, np.ones(theta_S_l.shape[0]), axis = 1)    
+            self.layers[i].X = np.insert(theta_S_l, 0, np.ones(theta_S_l.shape[0]), axis = 1)    
     
+    def _back_propagation(self, n_prime):
+
+        # function to back propagate to calculate deltas and gradients
+        for i in range(self.L - 1, 0, -1):
+            
+            self.layers[i].Delta = self.layers[i].act_de(self.layers[i].S) * (self.layers[i + 1].Delta @ (self.layers[i + 1].W[1:, :]).T)
+            self.layers[i].G = np.einsum('ij, ik -> jk', self.layers[i-1].X, self.layers[i].Delta)* (1/n_prime)
+
+    def _update_weights(self, eta):
+
+        # function to perform SGD update
+        for i in range(1, self.L + 1):
+
+            self.layers[i].W -= (eta * self.layers[i].G)
+            
     
     def predict(self, X):
         ''' X: n x d matrix, the sample batch, excluding the bias feature 1 column.
             
             return: n x 1 matrix, n is the number of samples, every row is the predicted class id.
             
-            Note that the return of this function is NOT the sames as the return of the `NN_Predict` method
-            in the lecture slides. In fact, every element in the vector returned by this function is the column
-            index of the largest number of each row in the matrix returned by the `NN_Predict` method in the 
-            lecture slides.
+            Note that the return of this function is NOT the sames as the return of the 
+            `NN_Predict` method in the lecture slides. In fact, every element in the 
+            vector returned by this function is the column index of the largest 
+            number of each row in the matrix returned by the `NN_Predict` method in the lecture slides.
          '''
+        
+        # insert bias column
+        self.layers[0].X = np.insert(X, 0, np.ones(X.shape[0]), axis = 1)
 
-        pass
-    
+        # forward feed
+        self._forward_feed()  
+
+        # convert into n x 1 matrix
+        return np.argmax(self.layers[self.L].X[:, 1:], axis=1)    
     
     def error(self, X, Y):
         ''' X: n x d matrix, the sample batch, excluding the bias feature 1 column. 
@@ -155,18 +191,30 @@ class NeuralNetwork:
             
             return: the percentage of misclassfied samples
         '''
+
+        # number of samples
+        n = X.shape[0]  
+        # get predicted samples
+        predicted_labels = self.predict(X)  
         
-        pass
+        # convert true labels into n x 1 vector
+        true_labels = np.argmax(Y, axis=1)
+        
+        # count misclassified samples
+        misclassified_count = np.sum(predicted_labels != true_labels)
+
+        # return percentage     
+        return misclassified_count / n
  
 
-    def _unison_shuffle(a, b):
+    def _unison_shuffle(self, a, b):
         
         # function to perform unison shuffling using random permutation
         if(len(a) == len(b)):
             permutation = np.random.permutation(len(a))
             return a[permutation], b[permutation]
         
-    def _mini_batch_indices(n, mini_batch_size):
+    def _mini_batch_indices(self, n, mini_batch_size):
 
         # function to compute mini batch indices
         # returns array of mini batch indices in the form

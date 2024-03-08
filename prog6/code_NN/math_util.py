@@ -5,12 +5,7 @@
 
 import numpy as np
 
-
-
 # Various math functions, including a collection of activation functions used in NN.
-
-
-
 
 class MyMath:
 
@@ -85,9 +80,8 @@ class MyMath:
             x: an array type of real numbers
             return: the numpy array of all ones of the same shape of x.
         '''
-        x = np.array(x)
-        n, d = x.shape
-        return np.ones((n,d))
+        
+        return np.ones_like(x)
 
     def relu(x):
         ''' The ReLU function 
@@ -108,7 +102,7 @@ class MyMath:
             return: 1, if x > 0; 0, otherwise.
         '''
         
-        # didnt finish this
+        return 1 if x > 0 else 0
     
     def relu_de(x):
         ''' The derivative of the ReLU function 
