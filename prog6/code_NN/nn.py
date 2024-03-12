@@ -57,7 +57,7 @@ class NeuralNetwork:
             sqrt_d_cur = np.sqrt(d_cur)
             d_prev = self.layers[i - 1].d
 
-            # might need to change this, currently excludes high
+
             vec = np.random.uniform(-1.0/sqrt_d_cur, 1.0/sqrt_d_cur, (d_prev + 1, d_cur))
 
             # (d^{(\ell-1)}+1 ) x d^{(\ell)} matrix. The weights of the edges coming into layer \ell.
@@ -112,7 +112,7 @@ class NeuralNetwork:
 
             X_prime = X[start: end + 1, :]
             Y_prime = Y[start: end + 1, :]
-            n_prime, d_prime = X_prime.shape
+            n_prime, _ = X_prime.shape
 
             # assign X in input layer
             self.layers[0].X = X_prime

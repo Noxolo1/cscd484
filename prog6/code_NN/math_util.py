@@ -28,7 +28,6 @@ class MyMath:
             return: the numpy array where every element is tanh derivative of the corresponding element in array x
         '''
         x = np.array(x)
-        tanh = np.tanh(x)
         return 1 - (np.tanh(x)**2)
 
     
